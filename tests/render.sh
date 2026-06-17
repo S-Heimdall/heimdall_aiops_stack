@@ -29,3 +29,5 @@ grep -q "name: heimdall-incident-manager" /tmp/heimdall-aiops-stack-rendered.yam
 grep -q "name: heimdall-resource-collector" /tmp/heimdall-aiops-stack-rendered.yaml
 grep -q "name: heimdall-operation-mcp" /tmp/heimdall-aiops-stack-rendered.yaml
 grep -q "amdp-registry.skala-ai.com" /tmp/heimdall-aiops-stack-rendered.yaml
+! grep -q "kind: Namespace" /tmp/heimdall-aiops-stack-rendered.yaml
+! grep -q "name: heimdall-frontend" /tmp/heimdall-aiops-stack-rendered.yaml

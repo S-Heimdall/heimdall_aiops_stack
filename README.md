@@ -20,6 +20,8 @@ helm upgrade --install heimdall-aiops ./charts/heimdall-aiops-stack \
 The default images use Harbor under `amdp-registry.skala-ai.com`. Override `global.imageRegistry`
 or each component image repository/tag from values when publishing new images.
 
+`frontend.enabled` defaults to `false` until a published Harbor frontend image is available.
+
 ## Helm Repository
 
 After merging to `main`, GitHub Actions packages the chart and publishes `gh-pages`.

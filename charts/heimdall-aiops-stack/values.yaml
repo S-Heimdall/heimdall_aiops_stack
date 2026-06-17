@@ -1,4 +1,6 @@
 namespaceOverride: ""
+namespace:
+  create: false
 
 imagePullSecrets:
   - name: harbor-registry
@@ -60,7 +62,7 @@ backend:
     AIOPS_ALERT_INGEST_URL: ""
 
 frontend:
-  enabled: true
+  enabled: false
   replicas: 1
   image:
     repository: skala25a/heimdall-frontend

@@ -1,6 +1,8 @@
+{{- if .Values.namespace.create }}
 apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ include "heimdall-aiops-stack.namespace" . }}
   labels:
     name: {{ include "heimdall-aiops-stack.namespace" . }}
+{{- end }}
