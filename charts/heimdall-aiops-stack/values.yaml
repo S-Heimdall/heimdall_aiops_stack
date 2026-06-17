@@ -90,8 +90,8 @@ telemetryQueryGateway:
   enabled: true
   replicas: 1
   image:
-    repository: skala26a-cloud/heimdall-telemetry-query-gateway
-    tag: 0.1.0
+    repository: skala25a/heimdall-telemetry-query-gateway
+    tag: tqg-no-inbound-token-20260617
   service:
     port: 8080
   connectionsJson: "[]"
