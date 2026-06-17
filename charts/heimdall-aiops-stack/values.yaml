@@ -1,0 +1,130 @@
+namespaceOverride: ""
+
+imagePullSecrets:
+  - name: harbor-registry
+
+harborRegistrySecret:
+  create: false
+  name: harbor-registry
+  server: amdp-registry.skala-ai.com
+  username: ""
+  password: ""
+  email: ""
+
+global:
+  imageRegistry: amdp-registry.skala-ai.com
+  imagePullPolicy: IfNotPresent
+  awsRegion: ap-northeast-2
+  databaseUrl: postgresql://postgres:heimdall_pass@heimdall-postgres:5432/heimdall
+  redisUrl: redis://heimdall-redis:6379/0
+
+secrets:
+  create: true
+  alertWebhookToken: ""
+  readGatewayToken: ""
+  awsAccessKeyId: ""
+  awsSecretAccessKey: ""
+  operation:
+    create: true
+    data: {}
+
+postgresql:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: postgres
+    tag: 15-alpine
+  storageClassName: gp3-standard
+  storageSize: 5Gi
+  username: postgres
+  password: heimdall_pass
+  database: heimdall
+
+redis:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: redis
+    tag: 7-alpine
+
+backend:
+  enabled: true
+  replicas: 1
+  image:
+    repository: skala25a/heimdall-backend
+    tag: 0.2.0
+  service:
+    type: LoadBalancer
+    port: 8000
+  env:
+    AIOPS_ALERT_INGEST_URL: ""
+
+frontend:
+  enabled: true
+  replicas: 1
+  image:
+    repository: skala25a/heimdall-frontend
+    tag: 0.1.0
+  service:
+    type: LoadBalancer
+    port: 80
+
+alertIngest:
+  enabled: true
+  replicas: 1
+  image:
+    repository: skala26a-cloud/heimdall-alert-ingest
+    tag: 0.8.0
+  service:
+    port: 8000
+  privateLinkNlb:
+    enabled: true
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: nlb
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+
+telemetryQueryGateway:
+  enabled: true
+  replicas: 1
+  image:
+    repository: skala26a-cloud/heimdall-telemetry-query-gateway
+    tag: 0.1.0
+  service:
+    port: 8080
+  connectionsJson: "[]"
+  inboundToken: ""
+  upstreamTimeoutSeconds: 20
+
+incidentManager:
+  enabled: true
+  replicas: 1
+  image:
+    repository: skala26a-cloud/heimdall-incident-manager
+    tag: 0.8.0
+
+resourceCollector:
+  enabled: true
+  replicas: 1
+  image:
+    repository: skala25a/heimdall-resource-collector
+    tag: 0.2.2
+  relayEnabled: true
+  workerEnabled: true
+
+operationService:
+  enabled: true
+  replicas: 1
+  image:
+    repository: skala26a-cloud/heimdall/operation-service
+    tag: 20260612-persistence-jsonb
+  config:
+    MCP_TRANSPORT: streamable-http
+    MCP_HOST: "0.0.0.0"
+    MCP_PORT: "8000"
+    ARGOCD_ENABLED: "false"
+    ARGOCD_TIMEOUT_SECONDS: "10"
+    KUBERNETES_AUTH_MODE: in_cluster
+    KUBERNETES_TIMEOUT_SECONDS: "10"
+    AWS_OPERATIONS_ENABLED: "false"
+    OPERATION_TRUST_PAYLOAD_CONTEXT: "true"

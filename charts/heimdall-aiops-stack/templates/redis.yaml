@@ -1,0 +1,43 @@
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: heimdall-redis
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-redis
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+  selector:
+    app.kubernetes.io/name: heimdall-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heimdall-redis
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-redis
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: heimdall-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: heimdall-redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ printf "%s/%s:%s" .Values.redis.image.registry .Values.redis.image.repository .Values.redis.image.tag | quote }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: redis
+              containerPort: 6379
+{{- end }}

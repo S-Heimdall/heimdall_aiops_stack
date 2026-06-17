@@ -1,0 +1,21 @@
+global:
+  awsRegion: ap-northeast-2
+
+secrets:
+  alertWebhookToken: REPLACE_ME_ALERTMANAGER_WEBHOOK_TOKEN
+  readGatewayToken: REPLACE_ME_SERVICE_SINGLE_GATEWAY_TOKEN
+  awsAccessKeyId: REPLACE_ME_AWS_ACCESS_KEY_ID
+  awsSecretAccessKey: REPLACE_ME_AWS_SECRET_ACCESS_KEY
+
+harborRegistrySecret:
+  create: true
+  username: REPLACE_ME_HARBOR_USERNAME
+  password: REPLACE_ME_HARBOR_PASSWORD
+  email: REPLACE_ME_EMAIL
+
+backend:
+  env:
+    AIOPS_ALERT_INGEST_URL: http://heimdall-alert-ingest-nlb.heimdall.svc.cluster.local:8000
+
+telemetryQueryGateway:
+  connectionsJson: "[]"

@@ -1,0 +1,56 @@
+{{- if .Values.incidentManager.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heimdall-incident-manager
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-incident-manager
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.incidentManager.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: heimdall-incident-manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: heimdall-incident-manager
+    spec:
+      {{- include "heimdall-aiops-stack.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: incident-manager
+          image: {{ include "heimdall-aiops-stack.image" (dict "registry" .Values.global.imageRegistry "repository" .Values.incidentManager.image.repository "tag" .Values.incidentManager.image.tag) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: {{ .Values.global.databaseUrl | quote }}
+            - name: INCIDENT_CONSUMER
+              value: "1"
+            - name: REDIS_URL
+              value: {{ .Values.global.redisUrl | quote }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heimdall-incident-manager
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-incident-manager
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: heimdall-incident-manager
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+{{- end }}

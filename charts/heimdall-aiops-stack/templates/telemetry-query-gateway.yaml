@@ -1,0 +1,66 @@
+{{- if .Values.telemetryQueryGateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heimdall-telemetry-query-gateway
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-telemetry-query-gateway
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.telemetryQueryGateway.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: heimdall-telemetry-query-gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: heimdall-telemetry-query-gateway
+    spec:
+      {{- include "heimdall-aiops-stack.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: telemetry-query-gateway
+          image: {{ include "heimdall-aiops-stack.image" (dict "registry" .Values.global.imageRegistry "repository" .Values.telemetryQueryGateway.image.repository "tag" .Values.telemetryQueryGateway.image.tag) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: TELEMETRY_CONNECTIONS
+              value: {{ .Values.telemetryQueryGateway.connectionsJson | quote }}
+            - name: OTEL_DEMO_READ_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: heimdall-read-gateway-token
+                  key: token
+            {{- if .Values.telemetryQueryGateway.inboundToken }}
+            - name: TQG_INBOUND_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: heimdall-tqg-inbound-token
+                  key: token
+            {{- end }}
+            - name: UPSTREAM_TIMEOUT_SECONDS
+              value: {{ .Values.telemetryQueryGateway.upstreamTimeoutSeconds | quote }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heimdall-telemetry-query-gateway
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-telemetry-query-gateway
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: heimdall-telemetry-query-gateway
+  ports:
+    - name: http
+      port: {{ .Values.telemetryQueryGateway.service.port }}
+      targetPort: http
+{{- end }}

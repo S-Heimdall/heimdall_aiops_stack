@@ -1,0 +1,68 @@
+{{- if .Values.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heimdall-backend
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-backend
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: heimdall-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: heimdall-backend
+    spec:
+      {{- include "heimdall-aiops-stack.imagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: backend
+          image: {{ include "heimdall-aiops-stack.image" (dict "registry" .Values.global.imageRegistry "repository" .Values.backend.image.repository "tag" .Values.backend.image.tag) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: {{ .Values.global.databaseUrl | quote }}
+            - name: AWS_REGION
+              value: {{ .Values.global.awsRegion | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: heimdall-collector-aws-runtime
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: heimdall-collector-aws-runtime
+                  key: AWS_SECRET_ACCESS_KEY
+            {{- if .Values.backend.env.AIOPS_ALERT_INGEST_URL }}
+            - name: AIOPS_ALERT_INGEST_URL
+              value: {{ .Values.backend.env.AIOPS_ALERT_INGEST_URL | quote }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heimdall-backend
+  namespace: {{ include "heimdall-aiops-stack.namespace" . }}
+  labels:
+    app.kubernetes.io/name: heimdall-backend
+    {{- include "heimdall-aiops-stack.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.backend.service.type }}
+  selector:
+    app.kubernetes.io/name: heimdall-backend
+  ports:
+    - name: http
+      port: {{ .Values.backend.service.port }}
+      targetPort: http
+{{- end }}
