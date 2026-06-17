@@ -54,7 +54,7 @@ backend:
   replicas: 1
   image:
     repository: skala25a/heimdall-backend
-    tag: 0.2.0
+    tag: registration-monitoring-052
   service:
     type: LoadBalancer
     port: 8000
