@@ -24,6 +24,7 @@ jobs:
 
       - name: Lint chart
         run: |
+          helm dependency build charts/heimdall-aiops-stack
           cat > /tmp/values.yaml <<'YAML'
           secrets:
             alertWebhookToken: redacted-alert-token
@@ -36,6 +37,7 @@ jobs:
       - name: Package chart
         run: |
           mkdir -p .chart-release
+          helm dependency build charts/heimdall-aiops-stack
           helm package charts/heimdall-aiops-stack --destination .chart-release
           helm repo index .chart-release --url https://s-heimdall.github.io/heimdall_aiops_stack
 

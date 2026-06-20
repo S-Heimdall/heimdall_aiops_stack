@@ -19,3 +19,18 @@ backend:
 
 telemetryQueryGateway:
   connectionsJson: "[]"
+
+langfuse:
+  enabled: false
+  bootstrap:
+    publicKey: REPLACE_ME_LANGFUSE_PUBLIC_KEY
+    secretKey: REPLACE_ME_LANGFUSE_SECRET_KEY
+    adminEmail: REPLACE_ME_LANGFUSE_ADMIN_EMAIL
+    adminPassword: REPLACE_ME_LANGFUSE_ADMIN_PASSWORD
+    salt: REPLACE_ME_LANGFUSE_SALT
+    encryptionKey: REPLACE_ME_64_HEX_LANGFUSE_ENCRYPTION_KEY
+    nextauthSecret: REPLACE_ME_LANGFUSE_NEXTAUTH_SECRET
+    postgresPassword: REPLACE_ME_LANGFUSE_POSTGRES_PASSWORD
+    redisPassword: REPLACE_ME_LANGFUSE_REDIS_PASSWORD
+    clickhousePassword: REPLACE_ME_LANGFUSE_CLICKHOUSE_PASSWORD
+    minioRootPassword: REPLACE_ME_LANGFUSE_MINIO_ROOT_PASSWORD

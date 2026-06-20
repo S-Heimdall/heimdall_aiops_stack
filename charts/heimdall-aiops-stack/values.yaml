@@ -130,3 +130,127 @@ operationService:
     KUBERNETES_TIMEOUT_SECONDS: "10"
     AWS_OPERATIONS_ENABLED: "false"
     OPERATION_TRUST_PAYLOAD_CONTEXT: "true"
+
+langfuse:
+  enabled: false
+  fullnameOverride: langfuse
+  global:
+    defaultStorageClass: gp2
+  bootstrap:
+    createSecret: true
+    secretName: heimdall-langfuse-bootstrap
+    orgId: heimdall
+    orgName: Heimdall
+    projectId: heimdall-ai-workflow
+    projectName: Heimdall AI Workflow
+    projectRetentionDays: "30"
+    publicKey: ""
+    secretKey: ""
+    adminEmail: ""
+    adminName: Heimdall Admin
+    adminPassword: ""
+    salt: ""
+    encryptionKey: ""
+    nextauthSecret: ""
+    postgresPassword: ""
+    redisPassword: ""
+    clickhousePassword: ""
+    minioRootUser: minio
+    minioRootPassword: ""
+  langfuse:
+    features:
+      telemetryEnabled: false
+      signUpDisabled: true
+    salt:
+      secretKeyRef:
+        name: heimdall-langfuse-bootstrap
+        key: LANGFUSE_SALT
+    encryptionKey:
+      secretKeyRef:
+        name: heimdall-langfuse-bootstrap
+        key: ENCRYPTION_KEY
+    additionalEnvFrom:
+      - secretRef:
+          name: heimdall-langfuse-bootstrap
+    additionalEnv:
+      - name: NODE_OPTIONS
+        value: --max-old-space-size=1536
+    web:
+      service:
+        type: LoadBalancer
+        port: 3000
+        externalPort: 80
+      resources:
+        requests:
+          cpu: 250m
+          memory: 768Mi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      livenessProbe:
+        initialDelaySeconds: 60
+        timeoutSeconds: 10
+      readinessProbe:
+        initialDelaySeconds: 60
+        timeoutSeconds: 10
+    worker:
+      resources:
+        requests:
+          cpu: 250m
+          memory: 768Mi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      livenessProbe:
+        initialDelaySeconds: 60
+        timeoutSeconds: 10
+    nextauth:
+      url: http://localhost:3000
+      secret:
+        secretKeyRef:
+          name: heimdall-langfuse-bootstrap
+          key: NEXTAUTH_SECRET
+  postgresql:
+    auth:
+      existingSecret: heimdall-langfuse-bootstrap
+      secretKeys:
+        userPasswordKey: POSTGRES_PASSWORD
+        adminPasswordKey: POSTGRES_PASSWORD
+    primary:
+      persistence:
+        storageClass: gp2
+  redis:
+    auth:
+      existingSecret: heimdall-langfuse-bootstrap
+      existingSecretPasswordKey: REDIS_PASSWORD
+    primary:
+      persistence:
+        storageClass: gp2
+  clickhouse:
+    auth:
+      existingSecret: heimdall-langfuse-bootstrap
+      existingSecretKey: CLICKHOUSE_PASSWORD
+    shards: 1
+    replicaCount: 1
+    resourcesPreset: small
+    persistence:
+      storageClass: gp2
+    zookeeper:
+      replicaCount: 1
+      persistence:
+        storageClass: gp2
+  s3:
+    accessKeyId:
+      secretKeyRef:
+        name: heimdall-langfuse-bootstrap
+        key: MINIO_ROOT_USER
+    secretAccessKey:
+      secretKeyRef:
+        name: heimdall-langfuse-bootstrap
+        key: MINIO_ROOT_PASSWORD
+    auth:
+      existingSecret: heimdall-langfuse-bootstrap
+      rootUserSecretKey: MINIO_ROOT_USER
+      rootPasswordSecretKey: MINIO_ROOT_PASSWORD
+    persistence:
+      storageClass: gp2
